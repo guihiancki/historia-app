@@ -919,7 +919,7 @@ async function carregarDesafioAleatorio(tema) {
             perguntasFiltradas = perguntas || [];
         }
 
-        if (perguntasFiltradas.length === 0 && typeof desafiosData !== 'undefined') {
+        if (perguntasFiltradas.length === 0 && typeof DESAFIOS !== 'undefined') {
             var trailId = tema;
             for (var i = 0; i < temasRoleta.length; i++) {
                 if (temasRoleta[i].nome === tema) {
@@ -927,9 +927,9 @@ async function carregarDesafioAleatorio(tema) {
                     break;
                 }
             }
-            if (desafiosData[trailId]) {
+            if (DESAFIOS[trailId]) {
                 var todosDesafios = [];
-                var d = desafiosData[trailId];
+                var d = DESAFIOS[trailId];
                 if (d.intermediarios) {
                     d.intermediarios.forEach(function(set) {
                         todosDesafios = todosDesafios.concat(set);
@@ -954,7 +954,7 @@ async function carregarDesafioAleatorio(tema) {
         var pergunta = perguntasFiltradas[Math.floor(Math.random() * perguntasFiltradas.length)];
         mostrarDesafio(pergunta);
     } catch (err) {
-        if (typeof desafiosData !== 'undefined') {
+        if (typeof DESAFIOS !== 'undefined') {
             var trailId = tema;
             for (var i = 0; i < temasRoleta.length; i++) {
                 if (temasRoleta[i].nome === tema) {
@@ -962,9 +962,9 @@ async function carregarDesafioAleatorio(tema) {
                     break;
                 }
             }
-            if (desafiosData[trailId]) {
+            if (DESAFIOS[trailId]) {
                 var todosDesafios = [];
-                var d = desafiosData[trailId];
+                var d = DESAFIOS[trailId];
                 if (d.intermediarios) {
                     d.intermediarios.forEach(function(set) {
                         todosDesafios = todosDesafios.concat(set);
