@@ -985,8 +985,8 @@ async function carregarDesafioAleatorio(tema) {
 }
 
 function mostrarDesafioLocal(p) {
-    var secao = document.getElementById('desafio-pergunta');
-    secao.style.display = 'block';
+    var secao = document.getElementById('modal-desafio');
+    secao.style.display = 'flex';
 
     document.getElementById('desafio-enunciado').textContent = p.enunciado;
 
@@ -1042,8 +1042,8 @@ function mostrarDesafioLocal(p) {
 }
 
 function mostrarDesafio(pergunta) {
-    var secao = document.getElementById('desafio-pergunta');
-    secao.style.display = 'block';
+    var secao = document.getElementById('modal-desafio');
+    secao.style.display = 'flex';
 
     document.getElementById('desafio-enunciado').textContent = pergunta.enunciado;
 
@@ -1130,7 +1130,7 @@ function setupDesafio() {
     var btnProximo = document.getElementById('btn-proximo-desafio');
     if (btnProximo) {
         btnProximo.addEventListener('click', function() {
-            document.getElementById('desafio-pergunta').style.display = 'none';
+            document.getElementById('modal-desafio').style.display = 'none';
         });
     }
 

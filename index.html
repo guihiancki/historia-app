@@ -158,14 +158,17 @@
                         </div>
                         <button class="btn btn-primario btn-girar" id="btn-girar">&#9881; Girar Roleta</button>
                     </div>
-                    <div id="desafio-pergunta" class="desafio-pergunta" style="display: none;">
-                        <p id="desafio-enunciado"></p>
-                        <div id="desafio-opcoes" class="desafio-opcoes"></div>
-                        <div id="desafio-feedback" class="desafio-feedback"></div>
-                        <button id="btn-proximo-desafio" class="btn btn-primario" style="display: none; width: 100%;">Próximo Desafio</button>
-                    </div>
                 </div>
             </section>
+
+            <div id="modal-desafio" class="modal-desafio" style="display: none;">
+                <div class="modal-desafio-conteudo">
+                    <p id="desafio-enunciado"></p>
+                    <div id="desafio-opcoes" class="desafio-opcoes"></div>
+                    <div id="desafio-feedback" class="desafio-feedback"></div>
+                    <button id="btn-proximo-desafio" class="btn btn-primario" style="display: none; width: 100%;">Próximo Desafio</button>
+                </div>
+            </div>
 
             <section class="ranking-section">
                 <h3>&#127942; Ranking Semanal</h3>
@@ -275,6 +278,6 @@
 
     <script src="trilhas-data.js?v=4"></script>
     <script src="desafios-data.js?v=3"></script>
-    <script src="app.js?v=10"></script>
+    <script src="app.js?v=11"></script>
 </body>
 </html>
