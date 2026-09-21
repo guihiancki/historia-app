@@ -259,93 +259,107 @@ function concluirAula(etapa, indexEtapa) {
 }
 
 function abrirDesafio(etapa, indexEtapa) {
-    var perguntasDesafio = [];
+    var trilhaId = getTrilhaId();
+    var desafios = DESAFIOS[trilhaId];
+    if (!desafios) {
+        alert('Desafios não encontrados para esta trilha');
+        return;
+    }
 
-    apiGet('/perguntas').then(function(todas) {
-        if (!todas || todas.length === 0) {
-            alert('Nenhuma pergunta disponível');
-            return;
-        }
+    var ehBossFight = (indexEtapa === trilhaAtual.etapas.length - 1);
+    var perguntasDesafio;
 
-        perguntasDesafio = todas.sort(function() { return Math.random() - 0.5; }).slice(0, 5);
-        var desafioIndex = 0;
-        var acertouCount = 0;
-        var respostas = [];
-
-        function mostrarDesafioPergunta() {
-            var p = perguntasDesafio[desafioIndex];
-            $('#desafio-contador').textContent = (desafioIndex + 1) + '/' + perguntasDesafio.length;
-            $('#desafio-barra-fill').style.width = ((desafioIndex / perguntasDesafio.length) * 100) + '%';
-            $('#desafio-enunciado').textContent = p.enunciado;
-
-            var opcoes = [
-                { letra: 'A', texto: p.opcao_a },
-                { letra: 'B', texto: p.opcao_b },
-                { letra: 'C', texto: p.opcao_c },
-                { letra: 'D', texto: p.opcao_d },
-                { letra: 'E', texto: p.opcao_e }
-            ].filter(function(o) { return o.texto; });
-
-            var html = '';
-            for (var i = 0; i < opcoes.length; i++) {
-                html += '<button class="desafio-opcao-modal" data-letra="' + opcoes[i].letra + '">';
-                html += '<span class="desafio-letra-modal">' + opcoes[i].letra + '</span>';
-                html += '<span>' + opcoes[i].texto + '</span></button>';
+    if (ehBossFight) {
+        perguntasDesafio = desafios.bossFight.slice();
+    } else {
+        var desafiosIntermediarios = desafios.intermediarios;
+        var quantDesafiosFeitos = 0;
+        for (var d = 0; d < indexEtapa; d++) {
+            if (trilhaAtual.etapas[d].tipo === 'desafio' && d < indexEtapa) {
+                quantDesafiosFeitos++;
             }
-            $('#desafio-opcoes').innerHTML = html;
-            $('#desafio-feedback').className = 'desafio-feedback';
-            $('#btn-proximo-desafio').style.display = 'none';
-            $('#modal-desafio').style.display = 'flex';
+        }
+        var indiceDesafio = quantDesafiosFeitos % desafiosIntermediarios.length;
+        perguntasDesafio = desafiosIntermediarios[indiceDesafio].slice();
+    }
 
-            $$('.desafio-opcao-modal').forEach(function(btn) {
-                btn.addEventListener('click', function() {
-                    var botoes = $$('.desafio-opcao-modal');
-                    botoes.forEach(function(b) {
-                        b.style.pointerEvents = 'none';
-                        if (b.getAttribute('data-letra') === p.resposta_correta) b.classList.add('correta');
-                    });
+    perguntasDesafio = perguntasDesafio.sort(function() { return Math.random() - 0.5; });
+    var desafioIndex = 0;
+    var acertouCount = 0;
+    var respostas = [];
 
-                    var acertou = this.getAttribute('data-letra') === p.resposta_correta;
-                    if (!acertou) this.classList.add('errada');
-                    if (acertou) acertouCount++;
+    function mostrarDesafioPergunta() {
+        var p = perguntasDesafio[desafioIndex];
+        $('#desafio-contador').textContent = (desafioIndex + 1) + '/' + perguntasDesafio.length;
+        $('#desafio-barra-fill').style.width = ((desafioIndex / perguntasDesafio.length) * 100) + '%';
+        $('#desafio-enunciado').textContent = (ehBossFight ? '🔥 ' : '') + p.enunciado;
 
-                    respostas.push({ pergunta_id: p.id, resposta: this.getAttribute('data-letra') });
+        var html = '';
+        for (var i = 0; i < p.opcoes.length; i++) {
+            var letra = String.fromCharCode(65 + i);
+            html += '<button class="desafio-opcao-modal" data-letra="' + letra + '">';
+            html += '<span class="desafio-letra-modal">' + letra + '</span>';
+            html += '<span>' + p.opcoes[i] + '</span></button>';
+        }
+        $('#desafio-opcoes').innerHTML = html;
+        $('#desafio-feedback').className = 'desafio-feedback';
+        $('#btn-proximo-desafio').style.display = 'none';
+        $('#modal-desafio').style.display = 'flex';
 
-                    var fb = $('#desafio-feedback');
-                    fb.className = 'desafio-feedback visivel ' + (acertou ? 'correto' : 'errado');
-                    fb.textContent = acertou ? '✅ Correto!' : '❌ Resposta: ' + p.resposta_correta.toUpperCase();
-
-                    $('#btn-proximo-desafio').style.display = 'block';
-                    $('#btn-proximo-desafio').textContent = desafioIndex < perguntasDesafio.length - 1 ? 'Próxima' : 'Ver Resultado';
+        $$('.desafio-opcao-modal').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                var botoes = $$('.desafio-opcao-modal');
+                botoes.forEach(function(b) {
+                    b.style.pointerEvents = 'none';
+                    if (b.getAttribute('data-letra') === p.resposta) b.classList.add('correta');
                 });
+
+                var acertou = this.getAttribute('data-letra') === p.resposta;
+                if (!acertou) this.classList.add('errada');
+                if (acertou) acertouCount++;
+
+                respostas.push({ pergunta_id: desafioIndex, resposta: this.getAttribute('data-letra') });
+
+                var fb = $('#desafio-feedback');
+                fb.className = 'desafio-feedback visivel ' + (acertou ? 'correto' : 'errado');
+                fb.textContent = acertou ? '✅ Correto!' : '❌ ' + p.explicacao;
+
+                $('#btn-proximo-desafio').style.display = 'block';
+                $('#btn-proximo-desafio').textContent = desafioIndex < perguntasDesafio.length - 1 ? 'Próxima' : 'Ver Resultado';
             });
+        });
+    }
+
+    $('#btn-proximo-desafio').onclick = function() {
+        desafioIndex++;
+        if (desafioIndex < perguntasDesafio.length) {
+            mostrarDesafioPergunta();
+        } else {
+            $('#modal-desafio').style.display = 'none';
+            finalizarDesafio(etapa, indexEtapa, acertouCount, perguntasDesafio.length, respostas, ehBossFight);
         }
+    };
 
-        $('#btn-proximo-desafio').onclick = function() {
-            desafioIndex++;
-            if (desafioIndex < perguntasDesafio.length) {
-                mostrarDesafioPergunta();
-            } else {
-                $('#modal-desafio').style.display = 'none';
-                finalizarDesafio(etapa, indexEtapa, acertouCount, perguntasDesafio.length, respostas);
-            }
-        };
-
-        mostrarDesafioPergunta();
-    });
+    mostrarDesafioPergunta();
 }
 
-function finalizarDesafio(etapa, indexEtapa, acertou, total, respostas) {
-    var xpGanho = acertou * 15 + (acertou === total ? 100 : 0);
+function finalizarDesafio(etapa, indexEtapa, acertou, total, respostas, ehBossFight) {
+    var xpGanho;
     var percentual = (acertou / total) * 100;
+
+    if (ehBossFight) {
+        xpGanho = acertou * 25 + (acertou === total ? 500 : 0);
+    } else {
+        xpGanho = acertou * 15 + (acertou === total ? 100 : 0);
+    }
 
     $('#rd-acertou').textContent = acertou + '/' + total;
     $('#rd-xp').textContent = '+' + xpGanho;
 
     if (percentual >= 80) {
-        $('#resultado-desafio-icon').textContent = '🏆';
-        $('#resultado-desafio-titulo').textContent = 'Excelente!';
-        $('#resultado-desafio-sub').textContent = 'Você dominou este conteúdo!';
+        $('#resultado-desafio-icon').textContent = ehBossFight ? '👑' : '🏆';
+        $('#resultado-desafio-titulo').textContent = ehBossFight ? 'BOSS DERROTADO!' : 'Excelente!';
+        $('#resultado-desafio-sub').textContent = ehBossFight ? 'Você dominou a trilha!' : 'Você dominou este conteúdo!';
         progressoTrilha[indexEtapa].completa = true;
     } else if (percentual >= 60) {
         $('#resultado-desafio-icon').textContent = '💪';
@@ -353,8 +367,8 @@ function finalizarDesafio(etapa, indexEtapa, acertou, total, respostas) {
         $('#resultado-desafio-sub').textContent = 'Quase lá! Continue praticando.';
         progressoTrilha[indexEtapa].completa = true;
     } else {
-        $('#resultado-desafio-icon').textContent = '📚';
-        $('#resultado-desafio-titulo').textContent = 'Precisa revisar!';
+        $('#resultado-desafio-icon').textContent = ehBossFight ? '🔥' : '📚';
+        $('#resultado-desafio-titulo').textContent = ehBossFight ? 'Boss resistiu!' : 'Precisa revisar!';
         $('#resultado-desafio-sub').textContent = 'Revise o conteúdo e tente novamente.';
     }
 
