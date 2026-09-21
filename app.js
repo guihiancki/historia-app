@@ -204,7 +204,7 @@ async function carregarDashboard() {
         }
     } catch(e) {}
 
-    carregarUltimaTrilha();
+    await carregarUltimaTrilha();
     carregarAtividades();
     carregarRanking();
 

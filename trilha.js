@@ -73,10 +73,18 @@ function salvarProgresso() {
     apiPost('/progresso/' + usuarioAtual.id + '/trilha', {
         modulo_id: 99,
         progresso_json: JSON.stringify(todo)
-    }).then(function() {
-        console.log('Progresso salvo no banco');
+    }).then(function(res) {
+        console.log('Progresso salvo:', res);
     }).catch(function(err) {
-        console.error('Erro ao salvar progresso:', err);
+        console.error('Erro ao salvar progresso, tentando novamente...');
+        setTimeout(function() {
+            apiPost('/progresso/' + usuarioAtual.id + '/trilha', {
+                modulo_id: 99,
+                progresso_json: JSON.stringify(todo)
+            }).catch(function(err2) {
+                console.error('Erro ao salvar progresso:', err2);
+            });
+        }, 1000);
     });
 }
 
@@ -93,7 +101,19 @@ function salvarXpNoBanco(xpGanho) {
             atualizarHeader();
         }
     }).catch(function(err) {
-        console.error('Erro ao salvar XP:', err);
+        console.error('Erro ao salvar XP, tentando novamente...');
+        setTimeout(function() {
+            apiPost('/xp/' + usuarioAtual.id, {
+                xp_ganho: xpGanho
+            }).then(function(res) {
+                if (res && res.xp_total !== undefined) {
+                    usuarioAtual.xp_total = res.xp_total;
+                    usuarioAtual.nivel = res.nivel;
+                    localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+                    atualizarHeader();
+                }
+            }).catch(function() {});
+        }, 1000);
     });
 }
 
