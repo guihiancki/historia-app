@@ -865,7 +865,7 @@ function girarRoleta() {
     btnGirar.disabled = true;
     btnGirar.textContent = 'Girando...';
 
-    document.getElementById('desafio-pergunta').style.display = 'none';
+    document.getElementById('modal-desafio').style.display = 'none';
 
     var giros = 5 + Math.random() * 5;
     var anguloFinal = anguloAtual + giros * 2 * Math.PI + Math.random() * 2 * Math.PI;
