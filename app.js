@@ -127,7 +127,7 @@ async function carregarUltimaTrilha() {
     try {
         const progresso = await apiGet('/progresso/' + usuarioAtual.id);
 
-        if (!progresso || progresso.length === 0) {
+        if (!progresso || !progresso.progresso_json) {
             $('#trilha-disciplina').textContent = 'Nenhuma trilha iniciada';
             $('#trilha-modulo').textContent = 'Escolha uma trilha de estudo abaixo para começar';
             $('#trilha-percentual').textContent = '0%';
@@ -137,33 +137,26 @@ async function carregarUltimaTrilha() {
             return;
         }
 
+        var todo = JSON.parse(progresso.progresso_json);
+        var trilhas = Object.keys(todo);
         var melhorTrilha = null;
         var maiorProgresso = 0;
 
-        for (var i = 0; i < progresso.length; i++) {
-            var p = progresso[i];
-            if (p.modulo_id === 99 && p.progresso_json) {
-                try {
-                    var todo = JSON.parse(p.progresso_json);
-                    var trilhas = Object.keys(todo);
-                    for (var t = 0; t < trilhas.length; t++) {
-                        var trilhaId = trilhas[t];
-                        var etapas = todo[trilhaId];
-                        if (etapas && etapas.length > 0) {
-                            var completas = etapas.filter(function(e) { return e.completa; }).length;
-                            var percentual = (completas / etapas.length) * 100;
-                            if (percentual > maiorProgresso) {
-                                maiorProgresso = percentual;
-                                melhorTrilha = {
-                                    id: trilhaId,
-                                    nome: (trilhasMap[trilhaId] || { nome: trilhaId, icone: '📚' }).nome,
-                                    icone: (trilhasMap[trilhaId] || { icone: '📚' }).icone,
-                                    percentual: percentual
-                                };
-                            }
-                        }
-                    }
-                } catch(e) {}
+        for (var t = 0; t < trilhas.length; t++) {
+            var trilhaId = trilhas[t];
+            var etapas = todo[trilhaId];
+            if (etapas && etapas.length > 0) {
+                var completas = etapas.filter(function(e) { return e.completa; }).length;
+                var percentual = (completas / etapas.length) * 100;
+                if (percentual > maiorProgresso) {
+                    maiorProgresso = percentual;
+                    melhorTrilha = {
+                        id: trilhaId,
+                        nome: (trilhasMap[trilhaId] || { nome: trilhaId, icone: '📚' }).nome,
+                        icone: (trilhasMap[trilhaId] || { icone: '📚' }).icone,
+                        percentual: percentual
+                    };
+                }
             }
         }
 

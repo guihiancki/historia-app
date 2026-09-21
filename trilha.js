@@ -43,18 +43,13 @@ function carregarProgresso() {
     var trilhaId = getTrilhaId();
 
     apiGet('/progresso/' + usuarioAtual.id).then(function(dados) {
-        var encontrado = false;
-        for (var i = 0; i < dados.length; i++) {
-            if (dados[i].modulo_id === 99) {
-                var todo = JSON.parse(dados[i].progresso_json || '{}');
-                if (todo[trilhaId]) {
-                    progressoTrilha = todo[trilhaId];
-                    encontrado = true;
-                    break;
-                }
+        if (dados && dados.progresso_json) {
+            var todo = JSON.parse(dados.progresso_json);
+            if (todo[trilhaId]) {
+                progressoTrilha = todo[trilhaId];
             }
         }
-        if (!encontrado || progressoTrilha.length === 0) {
+        if (!progressoTrilha || progressoTrilha.length === 0) {
             progressoTrilha = trilhaAtual.etapas.map(function(e, i) {
                 return { index: i, tipo: e.tipo, completa: false };
             });
