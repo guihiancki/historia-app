@@ -1,4 +1,4 @@
-var API_URL = 'http://localhost:3000/api';
+var API_URL = 'https://historia-app-api.onrender.com/api';
 var usuarioAtual = null;
 var progressoTrilha = [];
 
