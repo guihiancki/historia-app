@@ -236,6 +236,14 @@ function abrirFlashcards(etapa, indexEtapa) {
     mostrarFlashcard();
 }
 
+function salvarXpNoBanco(xpGanho) {
+    if (!usuarioAtual) return;
+
+    apiPost('/xp/' + usuarioAtual.id, {
+        xp_ganho: xpGanho
+    }).catch(function() {});
+}
+
 function concluirAula(etapa, indexEtapa) {
     progressoTrilha[indexEtapa].completa = true;
     salvarProgresso();
@@ -250,6 +258,7 @@ function concluirAula(etapa, indexEtapa) {
         usuarioAtual.nivel = Math.floor(usuarioAtual.xp_total / 100) + 1;
         localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
         atualizarHeader();
+        salvarXpNoBanco(xpGanho);
     }
 
     $('#btn-proxima-etapa').onclick = function() {
@@ -379,14 +388,7 @@ function finalizarDesafio(etapa, indexEtapa, acertou, total, respostas, ehBossFi
         usuarioAtual.nivel = Math.floor(usuarioAtual.xp_total / 100) + 1;
         localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
         atualizarHeader();
-
-        apiPost('/quiz/submeter/' + usuarioAtual.id, {
-            modulo_id: indexEtapa + 1,
-            respostas: respostas,
-            tempo_segundos: null
-        }).catch(function(err) {
-            console.error('Erro ao salvar:', err);
-        });
+        salvarXpNoBanco(xpGanho);
     }
 
     $('#modal-resultado-desafio').style.display = 'flex';
