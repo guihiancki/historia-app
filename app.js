@@ -903,85 +903,34 @@ function girarRoleta() {
     requestAnimationFrame(animar);
 }
 
-async function carregarDesafioAleatorio(tema) {
-    try {
-        var perguntas = await apiGet('/perguntas');
+function carregarDesafioAleatorio(tema) {
+    var trailId = tema;
+    for (var i = 0; i < temasRoleta.length; i++) {
+        if (temasRoleta[i].nome === tema) {
+            trailId = temasRoleta[i].trailId;
+            break;
+        }
+    }
 
-        var perguntasFiltradas = [];
-        if (perguntas && perguntas.length > 0) {
-            perguntasFiltradas = perguntas.filter(function(p) {
-                return p.disciplina && p.disciplina.nome &&
-                    p.disciplina.nome.toLowerCase().indexOf(tema.toLowerCase()) !== -1;
+    if (typeof DESAFIOS !== 'undefined' && DESAFIOS[trailId]) {
+        var todosDesafios = [];
+        var d = DESAFIOS[trailId];
+        if (d.intermediarios) {
+            d.intermediarios.forEach(function(set) {
+                todosDesafios = todosDesafios.concat(set);
             });
         }
-
-        if (perguntasFiltradas.length === 0) {
-            perguntasFiltradas = perguntas || [];
+        if (d.bossFight) {
+            todosDesafios = todosDesafios.concat(d.bossFight);
         }
-
-        if (perguntasFiltradas.length === 0 && typeof DESAFIOS !== 'undefined') {
-            var trailId = tema;
-            for (var i = 0; i < temasRoleta.length; i++) {
-                if (temasRoleta[i].nome === tema) {
-                    trailId = temasRoleta[i].trailId;
-                    break;
-                }
-            }
-            if (DESAFIOS[trailId]) {
-                var todosDesafios = [];
-                var d = DESAFIOS[trailId];
-                if (d.intermediarios) {
-                    d.intermediarios.forEach(function(set) {
-                        todosDesafios = todosDesafios.concat(set);
-                    });
-                }
-                if (d.bossFight) {
-                    todosDesafios = todosDesafios.concat(d.bossFight);
-                }
-                if (todosDesafios.length > 0) {
-                    var p = todosDesafios[Math.floor(Math.random() * todosDesafios.length)];
-                    mostrarDesafioLocal(p);
-                    return;
-                }
-            }
-        }
-
-        if (perguntasFiltradas.length === 0) {
-            alert('Nenhuma pergunta disponível para este tema');
+        if (todosDesafios.length > 0) {
+            var p = todosDesafios[Math.floor(Math.random() * todosDesafios.length)];
+            mostrarDesafioLocal(p);
             return;
         }
-
-        var pergunta = perguntasFiltradas[Math.floor(Math.random() * perguntasFiltradas.length)];
-        mostrarDesafio(pergunta);
-    } catch (err) {
-        if (typeof DESAFIOS !== 'undefined') {
-            var trailId = tema;
-            for (var i = 0; i < temasRoleta.length; i++) {
-                if (temasRoleta[i].nome === tema) {
-                    trailId = temasRoleta[i].trailId;
-                    break;
-                }
-            }
-            if (DESAFIOS[trailId]) {
-                var todosDesafios = [];
-                var d = DESAFIOS[trailId];
-                if (d.intermediarios) {
-                    d.intermediarios.forEach(function(set) {
-                        todosDesafios = todosDesafios.concat(set);
-                    });
-                }
-                if (d.bossFight) {
-                    todosDesafios = todosDesafios.concat(d.bossFight);
-                }
-                if (todosDesafios.length > 0) {
-                    var p = todosDesafios[Math.floor(Math.random() * todosDesafios.length)];
-                    mostrarDesafioLocal(p);
-                    return;
-                }
-            }
-        }
-        alert('Erro ao carregar desafio');
     }
+
+    alert('Nenhuma pergunta disponível para este tema');
 }
 
 function mostrarDesafioLocal(p) {
