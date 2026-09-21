@@ -361,12 +361,22 @@ function abrirDesafio(etapa, indexEtapa) {
         $('#desafio-barra-fill').style.width = ((desafioIndex / perguntasDesafio.length) * 100) + '%';
         $('#desafio-enunciado').textContent = (ehBossFight ? '🔥 ' : '') + p.enunciado;
 
+        var opcoesEmbaralhadas = p.opcoes.map(function(opcao, i) {
+            return { texto: opcao, letraOriginal: String.fromCharCode(65 + i) };
+        });
+        for (var i = opcoesEmbaralhadas.length - 1; i > 0; i--) {
+            var j = Math.floor(Math.random() * (i + 1));
+            var temp = opcoesEmbaralhadas[i];
+            opcoesEmbaralhadas[i] = opcoesEmbaralhadas[j];
+            opcoesEmbaralhadas[j] = temp;
+        }
+
         var html = '';
-        for (var i = 0; i < p.opcoes.length; i++) {
+        for (var i = 0; i < opcoesEmbaralhadas.length; i++) {
             var letra = String.fromCharCode(65 + i);
-            html += '<button class="desafio-opcao-modal" data-letra="' + letra + '">';
+            html += '<button class="desafio-opcao-modal" data-letra="' + opcoesEmbaralhadas[i].letraOriginal + '">';
             html += '<span class="desafio-letra-modal">' + letra + '</span>';
-            html += '<span>' + p.opcoes[i] + '</span></button>';
+            html += '<span>' + opcoesEmbaralhadas[i].texto + '</span></button>';
         }
         $('#desafio-opcoes').innerHTML = html;
         $('#desafio-feedback').className = 'desafio-feedback';

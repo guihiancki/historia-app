@@ -497,13 +497,18 @@ function mostrarPergunta() {
 
     $('#quiz-pergunta').textContent = pergunta.enunciado;
 
-    const opcoes = [
+    let opcoes = [
         { letra: 'A', texto: pergunta.opcao_a },
         { letra: 'B', texto: pergunta.opcao_b },
         { letra: 'C', texto: pergunta.opcao_c },
         { letra: 'D', texto: pergunta.opcao_d },
         { letra: 'E', texto: pergunta.opcao_e }
     ].filter(o => o.texto);
+
+    for (let i = opcoes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [opcoes[i], opcoes[j]] = [opcoes[j], opcoes[i]];
+    }
 
     $('#quiz-opcoes').innerHTML = opcoes.map(o => `
         <button class="opcao-btn" data-letra="${o.letra}">
@@ -891,6 +896,13 @@ function mostrarDesafio(pergunta) {
         { letra: 'D', texto: pergunta.opcao_d },
         { letra: 'E', texto: pergunta.opcao_e }
     ].filter(function(o) { return o.texto; });
+
+    for (var i = opcoes.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = opcoes[i];
+        opcoes[i] = opcoes[j];
+        opcoes[j] = temp;
+    }
 
     var html = '';
     for (var i = 0; i < opcoes.length; i++) {
