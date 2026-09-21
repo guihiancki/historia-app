@@ -172,6 +172,19 @@ async function carregarUltimaTrilha() {
 
         var todo = JSON.parse(progresso.progresso_json);
         var trilhas = Object.keys(todo);
+
+        $$('.trilha-estudo-card').forEach(function(card) {
+            var href = card.getAttribute('href') || '';
+            var match = href.match(/id=([^&]+)/);
+            if (match) {
+                var trilhaId = match[1];
+                var etapas = todo[trilhaId];
+                if (etapas && etapas.length > 0) {
+                    card.classList.add('iniciada');
+                }
+            }
+        });
+
         var melhorTrilha = null;
         var maiorProgresso = -1;
 
