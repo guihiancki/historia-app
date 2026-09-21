@@ -173,7 +173,7 @@ async function carregarUltimaTrilha() {
         var todo = JSON.parse(progresso.progresso_json);
         var trilhas = Object.keys(todo);
         var melhorTrilha = null;
-        var maiorProgresso = 0;
+        var maiorProgresso = -1;
 
         for (var t = 0; t < trilhas.length; t++) {
             var trilhaId = trilhas[t];
@@ -181,7 +181,20 @@ async function carregarUltimaTrilha() {
             if (etapas && etapas.length > 0) {
                 var completas = etapas.filter(function(e) { return e.completa; }).length;
                 var percentual = (completas / etapas.length) * 100;
-                if (percentual > maiorProgresso) {
+                var estaCompleta = completas === etapas.length;
+
+                var deveAtualizar = false;
+                if (melhorTrilha === null) {
+                    deveAtualizar = true;
+                } else if (!estaCompleta && maiorProgresso === 100) {
+                    deveAtualizar = true;
+                } else if (!estaCompleta && percentual > maiorProgresso) {
+                    deveAtualizar = true;
+                } else if (estaCompleta && maiorProgresso === 100 && percentual > maiorProgresso) {
+                    deveAtualizar = true;
+                }
+
+                if (deveAtualizar) {
                     maiorProgresso = percentual;
                     melhorTrilha = {
                         id: trilhaId,
@@ -238,7 +251,6 @@ async function carregarDashboard() {
     } catch(e) {}
 
     await carregarUltimaTrilha();
-    carregarAtividades();
     carregarRanking();
 
     $$('.trilha-estudo-card').forEach(function(card) {
@@ -661,49 +673,6 @@ function mostrarPopupBoasVindas() {
         localStorage.setItem('onboardingCompleto', 'true');
         modal.remove();
     });
-}
-
-// ============ ATIVIDADES RECENTES ============
-async function carregarAtividades() {
-    if (!usuarioAtual) return;
-
-    try {
-        const quizzes = await apiGet('/quiz/historico/' + usuarioAtual.id);
-        const lista = $('#lista-atividades');
-
-        if (!quizzes || quizzes.length === 0) {
-            lista.innerHTML = '<div class="atividade-vazia"><span class="atividade-vazia-icone">&#128221;</span><p>Nenhuma atividade ainda. Comece uma trilha acima!</p></div>';
-            return;
-        }
-
-        var html = '';
-        var ultimos = quizzes.slice(0, 8);
-
-        for (var i = 0; i < ultimos.length; i++) {
-            var q = ultimos[i];
-            var nomeModulo = q.modulos ? q.modulos.nome : 'Quiz';
-            var nomeDisciplina = '';
-            if (q.modulos && q.modulos.disciplinas) {
-                nomeDisciplina = q.modulos.disciplinas.nome;
-            }
-            var data = new Date(q.criado_em);
-            var dataStr = data.toLocaleDateString('pt-BR') + ' ' + data.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-            var percentual = q.total_perguntas > 0 ? Math.round((q.perguntas_acertadas / q.total_perguntas) * 100) : 0;
-
-            html += '<div class="atividade-item">';
-            html += '  <div class="atividade-icone quiz">&#9998;</div>';
-            html += '  <div class="atividade-info">';
-            html += '    <div class="atividade-titulo">' + nomeModulo + '</div>';
-            html += '    <div class="atividade-desc">' + nomeDisciplina + (nomeDisciplina ? ' · ' : '') + dataStr + ' · ' + q.perguntas_acertadas + '/' + q.total_perguntas + ' (' + percentual + '%)</div>';
-            html += '  </div>';
-            html += '  <div class="atividade-xp">+' + q.xp_ganho + ' XP</div>';
-            html += '</div>';
-        }
-
-        lista.innerHTML = html;
-    } catch (err) {
-        console.error('Erro ao carregar atividades:', err);
-    }
 }
 
 // ============ RANKING ============
