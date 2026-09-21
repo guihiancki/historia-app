@@ -236,6 +236,14 @@ async function carregarUltimaTrilha() {
         $('#ultima-trilha').style.display = 'block';
         $('#btn-continuar-trilha').style.display = 'block';
 
+        $$('.trilha-estudo-card').forEach(function(card) {
+            card.classList.remove('ativa');
+            var href = card.getAttribute('href') || '';
+            if (href.indexOf(melhorTrilha.id) !== -1) {
+                card.classList.add('ativa');
+            }
+        });
+
         $('#btn-continuar-trilha').onclick = function() {
             window.location.href = 'trilha.html?id=' + melhorTrilha.id;
         };
@@ -760,16 +768,44 @@ async function carregarRanking() {
 }
 
 // ============ DESAFIO ROLETA ============
+function salvarXpNoBanco(xpGanho) {
+    if (!usuarioAtual) return;
+
+    usuarioAtual.xp_total = (usuarioAtual.xp_total || 0) + xpGanho;
+    usuarioAtual.nivel = Math.floor(usuarioAtual.xp_total / 100) + 1;
+    localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+    atualizarHeaderXP();
+
+    apiPost('/xp/' + usuarioAtual.id, { xp_ganho: xpGanho }).then(function(res) {
+        if (res && res.xp_total !== undefined) {
+            usuarioAtual.xp_total = res.xp_total;
+            usuarioAtual.nivel = res.nivel;
+            localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+            atualizarHeaderXP();
+        }
+    }).catch(function() {
+        setTimeout(function() {
+            apiPost('/xp/' + usuarioAtual.id, { xp_ganho: xpGanho }).then(function(res) {
+                if (res && res.xp_total !== undefined) {
+                    usuarioAtual.xp_total = res.xp_total;
+                    usuarioAtual.nivel = res.nivel;
+                    localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+                    atualizarHeaderXP();
+                }
+            }).catch(function() {});
+        }, 2000);
+    });
+}
+
 var temasRoleta = [
-    { nome: 'República', cor: '#05f2af' },
-    { nome: 'Guerra Fria', cor: '#1cb0f6' },
-    { nome: 'Filosofia', cor: '#ff9600' },
-    { nome: 'Idade Média', cor: '#ce82ff' },
-    { nome: 'Sociologia', cor: '#ff4b4b' },
-    { nome: 'Colonial', cor: '#ffc800' },
-    { nome: 'Era Vargas', cor: '#05f29b' },
-    { nome: 'Literatura', cor: '#bfbaa3' },
-    { nome: 'Geopolítica', cor: '#595451' }
+    { nome: 'República', cor: '#05f2af', trailId: 'republica' },
+    { nome: 'Geopolítica', cor: '#595451', trailId: 'geopolitica' },
+    { nome: 'Filosofia', cor: '#ff9600', trailId: 'filosofia-grega' },
+    { nome: 'Idade Média', cor: '#ce82ff', trailId: 'idade-media' },
+    { nome: 'Sociologia', cor: '#ff4b4b', trailId: 'sociologia' },
+    { nome: 'Colonial', cor: '#ffc800', trailId: 'brasil-colonial' },
+    { nome: 'Literatura', cor: '#bfbaa3', trailId: 'literatura-brasileira' },
+    { nome: 'Atualidades', cor: '#1cb0f6', trailId: 'atualidades' }
 ];
 
 var girando = false;
@@ -871,15 +907,137 @@ async function carregarDesafioAleatorio(tema) {
     try {
         var perguntas = await apiGet('/perguntas');
 
-        if (!perguntas || perguntas.length === 0) {
-            alert('Nenhuma pergunta disponível no momento');
+        var perguntasFiltradas = [];
+        if (perguntas && perguntas.length > 0) {
+            perguntasFiltradas = perguntas.filter(function(p) {
+                return p.disciplina && p.disciplina.nome &&
+                    p.disciplina.nome.toLowerCase().indexOf(tema.toLowerCase()) !== -1;
+            });
+        }
+
+        if (perguntasFiltradas.length === 0) {
+            perguntasFiltradas = perguntas || [];
+        }
+
+        if (perguntasFiltradas.length === 0 && typeof desafiosData !== 'undefined') {
+            var trailId = tema;
+            for (var i = 0; i < temasRoleta.length; i++) {
+                if (temasRoleta[i].nome === tema) {
+                    trailId = temasRoleta[i].trailId;
+                    break;
+                }
+            }
+            if (desafiosData[trailId]) {
+                var todosDesafios = [];
+                var d = desafiosData[trailId];
+                if (d.intermediarios) {
+                    d.intermediarios.forEach(function(set) {
+                        todosDesafios = todosDesafios.concat(set);
+                    });
+                }
+                if (d.bossFight) {
+                    todosDesafios = todosDesafios.concat(d.bossFight);
+                }
+                if (todosDesafios.length > 0) {
+                    var p = todosDesafios[Math.floor(Math.random() * todosDesafios.length)];
+                    mostrarDesafioLocal(p);
+                    return;
+                }
+            }
+        }
+
+        if (perguntasFiltradas.length === 0) {
+            alert('Nenhuma pergunta disponível para este tema');
             return;
         }
 
-        var pergunta = perguntas[Math.floor(Math.random() * perguntas.length)];
+        var pergunta = perguntasFiltradas[Math.floor(Math.random() * perguntasFiltradas.length)];
         mostrarDesafio(pergunta);
     } catch (err) {
-        console.error('Erro ao carregar desafio:', err);
+        if (typeof desafiosData !== 'undefined') {
+            var trailId = tema;
+            for (var i = 0; i < temasRoleta.length; i++) {
+                if (temasRoleta[i].nome === tema) {
+                    trailId = temasRoleta[i].trailId;
+                    break;
+                }
+            }
+            if (desafiosData[trailId]) {
+                var todosDesafios = [];
+                var d = desafiosData[trailId];
+                if (d.intermediarios) {
+                    d.intermediarios.forEach(function(set) {
+                        todosDesafios = todosDesafios.concat(set);
+                    });
+                }
+                if (d.bossFight) {
+                    todosDesafios = todosDesafios.concat(d.bossFight);
+                }
+                if (todosDesafios.length > 0) {
+                    var p = todosDesafios[Math.floor(Math.random() * todosDesafios.length)];
+                    mostrarDesafioLocal(p);
+                    return;
+                }
+            }
+        }
+        alert('Erro ao carregar desafio');
+    }
+}
+
+function mostrarDesafioLocal(p) {
+    var secao = document.getElementById('desafio-pergunta');
+    secao.style.display = 'block';
+
+    document.getElementById('desafio-enunciado').textContent = p.enunciado;
+
+    var opcoesEmbaralhadas = p.opcoes.map(function(opcao, i) {
+        return { texto: opcao, letraOriginal: String.fromCharCode(65 + i) };
+    });
+    for (var i = opcoesEmbaralhadas.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = opcoesEmbaralhadas[i];
+        opcoesEmbaralhadas[i] = opcoesEmbaralhadas[j];
+        opcoesEmbaralhadas[j] = temp;
+    }
+
+    var html = '';
+    for (var i = 0; i < opcoesEmbaralhadas.length; i++) {
+        var letra = String.fromCharCode(65 + i);
+        html += '<button class="desafio-opcao" data-letra="' + opcoesEmbaralhadas[i].letraOriginal + '">';
+        html += '<span class="desafio-letra">' + letra + '</span>';
+        html += '<span>' + opcoesEmbaralhadas[i].texto + '</span>';
+        html += '</button>';
+    }
+    document.getElementById('desafio-opcoes').innerHTML = html;
+
+    document.getElementById('desafio-feedback').className = 'desafio-feedback';
+    document.getElementById('desafio-feedback').innerHTML = '';
+    document.getElementById('btn-proximo-desafio').style.display = 'none';
+
+    var botoes = document.querySelectorAll('.desafio-opcao');
+    for (var j = 0; j < botoes.length; j++) {
+        botoes[j].addEventListener('click', function() {
+            var todosBotoes = document.querySelectorAll('.desafio-opcao');
+            for (var k = 0; k < todosBotoes.length; k++) {
+                todosBotoes[k].style.pointerEvents = 'none';
+                if (todosBotoes[k].getAttribute('data-letra') === p.resposta) {
+                    todosBotoes[k].classList.add('correta');
+                }
+            }
+
+            var acertou = this.getAttribute('data-letra') === p.resposta;
+            if (!acertou) this.classList.add('errada');
+
+            var fb = document.getElementById('desafio-feedback');
+            fb.className = 'desafio-feedback visivel ' + (acertou ? 'correto' : 'errado');
+            fb.textContent = acertou ? '✅ Correto! +15 XP' : '❌ ' + p.explicacao;
+
+            if (acertou && usuarioAtual) {
+                salvarXpNoBanco(15);
+            }
+
+            document.getElementById('btn-proximo-desafio').style.display = 'block';
+        });
     }
 }
 
@@ -982,9 +1140,20 @@ function setupDesafio() {
 // ============ INICIALIZAÇÃO ============
 function iniciarApp() {
     var onboardingCompleto = localStorage.getItem('onboardingCompleto');
+    var jaViuRoleta = sessionStorage.getItem('roletaVista');
 
     mostrarTela('tela-dashboard');
     carregarDashboard();
+
+    if (!jaViuRoleta) {
+        sessionStorage.setItem('roletaVista', 'true');
+        setTimeout(function() {
+            var secaoDesafio = document.querySelector('.desafio-section');
+            if (secaoDesafio) {
+                secaoDesafio.scrollIntoView({ behavior: 'smooth' });
+            }
+        }, 1500);
+    }
 
     if (!onboardingCompleto) {
         setTimeout(mostrarPopupBoasVindas, 500);

@@ -407,6 +407,20 @@ body {
     border-color: var(--verde-escuro);
 }
 
+.trilha-estudo-card.ativa {
+    background: #ff9600;
+    border-color: #ff9600;
+}
+
+.trilha-estudo-card.ativa .trilha-estudo-nome {
+    color: var(--escuro);
+}
+
+.trilha-estudo-card.ativa:hover {
+    background: #e68600;
+    border-color: #e68600;
+}
+
 .trilha-estudo-icone {
     font-size: 32px;
 }
