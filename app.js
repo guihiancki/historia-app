@@ -930,7 +930,7 @@ function carregarDesafioAleatorio(tema) {
         }
     }
 
-    alert('Nenhuma pergunta disponível para este tema');
+    alert('Tema: ' + tema + ' | trailId: ' + trailId + ' | DESAFIOS: ' + (typeof DESAFIOS));
 }
 
 function mostrarDesafioLocal(p) {
