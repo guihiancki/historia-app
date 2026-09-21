@@ -114,14 +114,14 @@ async function carregarUltimaTrilha() {
     if (!usuarioAtual) return;
 
     var trilhasMap = {
-        'republica': { nome: 'República' },
-        'geopolitica': { nome: 'Geopolítica do Século XXI' },
-        'filosofia-grega': { nome: 'Filosofia Grega' },
-        'idade-media': { nome: 'Idade Média' },
-        'sociologia': { nome: 'Sociologia' },
-        'brasil-colonial': { nome: 'Brasil Colonial' },
-        'literatura-brasileira': { nome: 'Literatura Brasileira' },
-        'atualidades': { nome: 'Atualidades' }
+        'republica': { nome: 'República', icone: '🇧🇷' },
+        'geopolitica': { nome: 'Geopolítica do Século XXI', icone: '🌍' },
+        'filosofia-grega': { nome: 'Filosofia Grega', icone: '📚' },
+        'idade-media': { nome: 'Idade Média', icone: '🏰' },
+        'sociologia': { nome: 'Sociologia', icone: '👥' },
+        'brasil-colonial': { nome: 'Brasil Colonial', icone: '🇧🇷' },
+        'literatura-brasileira': { nome: 'Literatura Brasileira', icone: '📖' },
+        'atualidades': { nome: 'Atualidades', icone: '📰' }
     };
 
     try {
@@ -152,11 +152,12 @@ async function carregarUltimaTrilha() {
                         if (etapas && etapas.length > 0) {
                             var completas = etapas.filter(function(e) { return e.completa; }).length;
                             var percentual = (completas / etapas.length) * 100;
-                            if (percentual > maiorProgresso && percentual < 100) {
+                            if (percentual > maiorProgresso) {
                                 maiorProgresso = percentual;
                                 melhorTrilha = {
                                     id: trilhaId,
-                                    nome: (trilhasMap[trilhaId] || { nome: trilhaId }).nome,
+                                    nome: (trilhasMap[trilhaId] || { nome: trilhaId, icone: '📚' }).nome,
+                                    icone: (trilhasMap[trilhaId] || { icone: '📚' }).icone,
                                     percentual: percentual
                                 };
                             }
@@ -176,7 +177,7 @@ async function carregarUltimaTrilha() {
             return;
         }
 
-        $('#trilha-disciplina').textContent = melhorTrilha.nome;
+        $('#trilha-disciplina').textContent = melhorTrilha.icone + ' ' + melhorTrilha.nome;
         $('#trilha-modulo').textContent = Math.round(melhorTrilha.percentual) + '% concluído';
         $('#trilha-percentual').textContent = Math.round(melhorTrilha.percentual) + '%';
         $('#trilha-barra-fill').style.width = melhorTrilha.percentual + '%';
@@ -199,6 +200,16 @@ async function carregarDashboard() {
     }
 
     $('#saudacao-texto').textContent = `Olá, ${usuarioAtual.nome}!`;
+
+    try {
+        const dados = await apiGet('/progresso/' + usuarioAtual.id + '/resumo');
+        if (dados && dados.usuario) {
+            usuarioAtual.xp_total = dados.usuario.xp_total || 0;
+            usuarioAtual.nivel = dados.usuario.nivel || 1;
+            localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+            atualizarHeaderXP();
+        }
+    } catch(e) {}
 
     carregarUltimaTrilha();
     carregarAtividades();

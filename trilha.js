@@ -49,9 +49,9 @@ function carregarProgresso() {
                 var todo = JSON.parse(dados[i].progresso_json || '{}');
                 if (todo[trilhaId]) {
                     progressoTrilha = todo[trilhaId];
+                    encontrado = true;
+                    break;
                 }
-                encontrado = true;
-                break;
             }
         }
         if (!encontrado || progressoTrilha.length === 0) {
@@ -78,8 +78,27 @@ function salvarProgresso() {
     apiPost('/progresso/' + usuarioAtual.id + '/trilha', {
         modulo_id: 99,
         progresso_json: JSON.stringify(todo)
+    }).then(function() {
+        console.log('Progresso salvo no banco');
     }).catch(function(err) {
         console.error('Erro ao salvar progresso:', err);
+    });
+}
+
+function salvarXpNoBanco(xpGanho) {
+    if (!usuarioAtual) return;
+
+    apiPost('/xp/' + usuarioAtual.id, {
+        xp_ganho: xpGanho
+    }).then(function(res) {
+        if (res && res.xp_total !== undefined) {
+            usuarioAtual.xp_total = res.xp_total;
+            usuarioAtual.nivel = res.nivel;
+            localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+            atualizarHeader();
+        }
+    }).catch(function(err) {
+        console.error('Erro ao salvar XP:', err);
     });
 }
 
@@ -236,14 +255,6 @@ function abrirFlashcards(etapa, indexEtapa) {
     mostrarFlashcard();
 }
 
-function salvarXpNoBanco(xpGanho) {
-    if (!usuarioAtual) return;
-
-    apiPost('/xp/' + usuarioAtual.id, {
-        xp_ganho: xpGanho
-    }).catch(function() {});
-}
-
 function concluirAula(etapa, indexEtapa) {
     progressoTrilha[indexEtapa].completa = true;
     salvarProgresso();
@@ -365,15 +376,10 @@ function finalizarDesafio(etapa, indexEtapa, acertou, total, respostas, ehBossFi
     $('#rd-acertou').textContent = acertou + '/' + total;
     $('#rd-xp').textContent = '+' + xpGanho;
 
-    if (percentual >= 80) {
+    if (percentual >= 60) {
         $('#resultado-desafio-icon').textContent = ehBossFight ? '👑' : '🏆';
         $('#resultado-desafio-titulo').textContent = ehBossFight ? 'BOSS DERROTADO!' : 'Excelente!';
         $('#resultado-desafio-sub').textContent = ehBossFight ? 'Você dominou a trilha!' : 'Você dominou este conteúdo!';
-        progressoTrilha[indexEtapa].completa = true;
-    } else if (percentual >= 60) {
-        $('#resultado-desafio-icon').textContent = '💪';
-        $('#resultado-desafio-titulo').textContent = 'Bom trabalho!';
-        $('#resultado-desafio-sub').textContent = 'Quase lá! Continue praticando.';
         progressoTrilha[indexEtapa].completa = true;
     } else {
         $('#resultado-desafio-icon').textContent = ehBossFight ? '🔥' : '📚';
