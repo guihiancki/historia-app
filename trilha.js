@@ -1,6 +1,7 @@
 var API_URL = 'https://historia-app-api.onrender.com/api';
 var usuarioAtual = null;
 var progressoTrilha = [];
+var progressoGeral = {};
 var trilhaAtual = null;
 
 function $(sel) { return document.querySelector(sel); }
@@ -73,9 +74,13 @@ function carregarProgresso() {
 
     apiGet('/progresso/' + usuarioAtual.id).then(function(dados) {
         if (dados && dados.progresso_json) {
-            var todo = JSON.parse(dados.progresso_json);
-            if (todo[trilhaId]) {
-                progressoTrilha = todo[trilhaId];
+            try {
+                progressoGeral = JSON.parse(dados.progresso_json);
+            } catch(e) {
+                progressoGeral = {};
+            }
+            if (progressoGeral[trilhaId]) {
+                progressoTrilha = progressoGeral[trilhaId];
             }
         }
         if (!progressoTrilha || progressoTrilha.length === 0) {
@@ -96,23 +101,18 @@ function salvarProgresso() {
     if (!usuarioAtual) return;
 
     var trilhaId = getTrilhaId();
-    var todo = {};
-    todo[trilhaId] = progressoTrilha;
+    progressoGeral[trilhaId] = progressoTrilha;
 
-    apiPost('/progresso/' + usuarioAtual.id + '/trilha', {
+    var dadosParaSalvar = {
         modulo_id: 99,
-        progresso_json: JSON.stringify(todo)
-    }).then(function(res) {
+        progresso_json: JSON.stringify(progressoGeral)
+    };
+
+    apiPost('/progresso/' + usuarioAtual.id + '/trilha', dadosParaSalvar).then(function(res) {
     }).catch(function(err) {
-        console.error('Erro ao salvar progresso, tentando novamente...');
         setTimeout(function() {
-            apiPost('/progresso/' + usuarioAtual.id + '/trilha', {
-                modulo_id: 99,
-                progresso_json: JSON.stringify(todo)
-            }).catch(function(err2) {
-                console.error('Erro ao salvar progresso:', err2);
-            });
-        }, 1000);
+            apiPost('/progresso/' + usuarioAtual.id + '/trilha', dadosParaSalvar).catch(function() {});
+        }, 2000);
     });
 }
 
