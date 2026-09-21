@@ -1,0 +1,634 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --verde: #05f2af;
+    --verde-escuro: #04c48c;
+    --creme: #f2f0d5;
+    --bege: #bfbaa3;
+    --escuro: #2f3438;
+    --fundo: #d5d5d5;
+    --card: #ffffff;
+    --texto: #2f3438;
+    --texto-secundario: #2f3438;
+    --borda: #e0e0e0;
+    --sombra: rgba(89, 84, 81, 0.08);
+    --vermelho: #ff4b4b;
+    --amarelo: #ffc800;
+    --azul: #1cb0f6;
+}
+
+body {
+    font-family: 'Nunito', sans-serif;
+    background-color: var(--fundo);
+    color: var(--texto);
+    min-height: 100vh;
+}
+
+/* ============ HEADER ============ */
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 20px;
+    background: var(--card);
+    border-bottom: 1px solid var(--borda);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-esquerda {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-direita {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.header-titulo {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--escuro);
+}
+
+.btn-voltar {
+    background: var(--card);
+    color: var(--escuro);
+    border: 1px solid var(--borda);
+    padding: 8px 12px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.btn-primario {
+    background: var(--verde);
+    color: var(--escuro);
+    box-shadow: 0 3px 0 var(--verde-escuro);
+}
+
+.btn-primario:hover {
+    background: #04d99e;
+}
+
+.btn-primario:active {
+    transform: translateY(3px);
+    box-shadow: none;
+}
+
+.btn-secundario {
+    background: var(--card);
+    color: var(--escuro);
+    border: 1px solid var(--borda);
+}
+
+.btn-grande {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+}
+
+.xp-badge {
+    background: rgba(5, 242, 175, 0.15);
+    color: var(--verde-escuro);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.nivel-badge {
+    background: var(--creme);
+    color: var(--escuro);
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+/* ============ CAMINHO GAMIFICADO ============ */
+.caminho-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 20px;
+    min-height: calc(100vh - 60px);
+    position: relative;
+    overflow-x: hidden;
+}
+
+.caminho-avatar {
+    position: absolute;
+    z-index: 50;
+    font-size: 28px;
+    width: 44px;
+    height: 44px;
+    background: var(--card);
+    border: 3px solid var(--verde);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(5, 242, 175, 0.4);
+    transition: top 0.6s cubic-bezier(0.4, 0, 0.2, 1), left 0.3s;
+    pointer-events: none;
+}
+
+.caminho-trilho {
+    padding-top: 40px;
+    padding-bottom: 100px;
+}
+
+.etapa {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 0;
+    position: relative;
+}
+
+.etapa-linha {
+    width: 4px;
+    height: 40px;
+    background: var(--borda);
+    border-radius: 2px;
+}
+
+.etapa-linha.completa {
+    background: var(--verde);
+}
+
+.etapa-no {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 4px solid var(--borda);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    z-index: 2;
+}
+
+.etapa-no:hover:not(.bloqueada) {
+    transform: scale(1.08);
+    border-color: var(--verde);
+    box-shadow: 0 4px 16px rgba(5, 242, 175, 0.3);
+}
+
+.etapa-no.atual {
+    border-color: var(--verde);
+    background: rgba(5, 242, 175, 0.1);
+    animation: pulsar 2s infinite;
+}
+
+.etapa-no.completa {
+    border-color: var(--verde);
+    background: var(--verde);
+}
+
+.etapa-no.bloqueada {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.etapa-no.desafio {
+    border-color: var(--amarelo);
+    background: rgba(255, 200, 0, 0.1);
+    width: 90px;
+    height: 90px;
+}
+
+.etapa-no.desafio.atual {
+    animation: pulsar-desafio 2s infinite;
+}
+
+.etapa-no.desafio.completa {
+    background: var(--amarelo);
+    border-color: var(--amarelo);
+}
+
+.etapa-icone {
+    font-size: 28px;
+}
+
+.etapa-no.completa .etapa-icone::after {
+    content: '✓';
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    background: var(--verde);
+    color: white;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--card);
+}
+
+.etapa-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--escuro);
+    text-align: center;
+    margin-top: 8px;
+    max-width: 120px;
+}
+
+.etapa.bloqueada .etapa-label {
+    color: var(--bege);
+}
+
+@keyframes pulsar {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(5, 242, 175, 0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(5, 242, 175, 0); }
+}
+
+@keyframes pulsar-desafio {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 200, 0, 0.4); }
+    50% { box-shadow: 0 0 0 12px rgba(255, 200, 0, 0); }
+}
+
+/* ============ MODAL FLASHCARD ============ */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-flashcard {
+    background: var(--card);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+}
+
+.flashcard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.flashcard-contador {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--bege);
+}
+
+.flashcard-fechar {
+    background: none;
+    border: none;
+    font-size: 20px;
+    color: var(--bege);
+    cursor: pointer;
+}
+
+.flashcard-area {
+    perspective: 1000px;
+    margin-bottom: 20px;
+}
+
+.flashcard {
+    width: 100%;
+    height: 250px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 0.5s;
+    cursor: pointer;
+}
+
+.flashcard.virado {
+    transform: rotateY(180deg);
+}
+
+.flashcard-frente, .flashcard-verso {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 25px;
+    text-align: center;
+}
+
+.flashcard-frente {
+    background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+    border: 2px solid var(--azul);
+}
+
+.flashcard-verso {
+    background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+    border: 2px solid var(--verde);
+    transform: rotateY(180deg);
+}
+
+.flashcard-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+    color: var(--bege);
+}
+
+.flashcard-texto {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--escuro);
+    line-height: 1.5;
+}
+
+.flashcard-toque {
+    font-size: 11px;
+    color: var(--bege);
+    margin-top: 15px;
+}
+
+.flashcard-acoes {
+    display: flex;
+    gap: 10px;
+}
+
+.flashcard-acoes .btn {
+    flex: 1;
+    padding: 12px;
+    font-size: 14px;
+}
+
+/* ============ MODAL DESAFIO ============ */
+.modal-desafio {
+    background: var(--card);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 380px;
+    padding: 20px;
+}
+
+.desafio-header-modal {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.desafio-titulo-modal {
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--escuro);
+}
+
+.desafio-contador {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--amarelo);
+}
+
+.desafio-barra {
+    height: 8px;
+    background: var(--borda);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.desafio-barra-fill {
+    height: 100%;
+    background: var(--amarelo);
+    border-radius: 4px;
+    transition: width 0.3s;
+    width: 0%;
+}
+
+.desafio-enunciado {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--escuro);
+    text-align: center;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.desafio-opcoes {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.desafio-opcao-modal {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--borda);
+    border-radius: 10px;
+    background: var(--card);
+    color: var(--texto);
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.desafio-opcao-modal:hover:not(.correta):not(.errada) {
+    border-color: var(--verde);
+    background: rgba(5, 242, 175, 0.08);
+}
+
+.desafio-opcao-modal.correta {
+    border-color: var(--verde);
+    background: rgba(5, 242, 175, 0.2);
+}
+
+.desafio-opcao-modal.errada {
+    border-color: var(--vermelho);
+    background: #fff0f0;
+}
+
+.desafio-letra-modal {
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: var(--creme);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+.desafio-feedback {
+    text-align: center;
+    padding: 10px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: none;
+    font-weight: 700;
+    font-size: 14px;
+}
+
+.desafio-feedback.visivel {
+    display: block;
+}
+
+.desafio-feedback.correto {
+    background: rgba(5, 242, 175, 0.15);
+    border: 1px solid var(--verde);
+    color: var(--verde-escuro);
+}
+
+.desafio-feedback.errado {
+    background: #fff0f0;
+    border: 1px solid var(--vermelho);
+    color: var(--vermelho);
+}
+
+/* ============ MODAL RESULTADO DESAFIO ============ */
+.modal-resultado-desafio {
+    background: var(--card);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 350px;
+    padding: 30px;
+    text-align: center;
+}
+
+.resultado-desafio-icon {
+    font-size: 64px;
+    margin-bottom: 10px;
+}
+
+.modal-resultado-desafio h2 {
+    font-size: 24px;
+    font-weight: 800;
+    color: var(--escuro);
+    margin-bottom: 5px;
+}
+
+.resultado-desafio-sub {
+    font-size: 14px;
+    color: var(--bege);
+    margin-bottom: 20px;
+}
+
+.resultado-desafio-stats {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.resultado-stat {
+    text-align: center;
+}
+
+.resultado-stat-valor {
+    display: block;
+    font-size: 32px;
+    font-weight: 800;
+    color: var(--verde);
+}
+
+.resultado-stat-label {
+    font-size: 11px;
+    color: var(--bege);
+    text-transform: uppercase;
+}
+
+/* ============ MODAL CONCLUIR AULA ============ */
+.modal-concluir {
+    background: var(--card);
+    border-radius: 20px;
+    width: 100%;
+    max-width: 350px;
+    padding: 30px;
+    text-align: center;
+}
+
+.concluir-icon {
+    font-size: 64px;
+    margin-bottom: 10px;
+}
+
+.modal-concluir h2 {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--escuro);
+    margin-bottom: 5px;
+}
+
+.concluir-xp {
+    font-size: 28px;
+    font-weight: 800;
+    color: var(--verde);
+    margin-bottom: 10px;
+}
+
+.concluir-texto {
+    font-size: 14px;
+    color: var(--bege);
+    margin-bottom: 20px;
+}
+
+/* ============ ANIMAÇÕES ============ */
+@keyframes deslizarDireita {
+    0% { transform: translateX(0); opacity: 1; }
+    100% { transform: translateX(100px); opacity: 0; }
+}
+
+@keyframes deslizarEsquerda {
+    0% { transform: translateX(-100px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
+}
+
+.animacao-saida {
+    animation: deslizarDireita 0.4s forwards;
+}
+
+.animacao-entrada {
+    animation: deslizarEsquerda 0.4s forwards;
+}

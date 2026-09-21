@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HistóriaApp - Aprenda Ciências Humanas</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- TELA DE LOGIN/CADASTRO -->
+    <div id="tela-auth" class="tela ativa">
+        <div class="auth-container">
+            <div class="auth-logo">
+                <span class="logo-icon">&#128218;</span>
+                <h1>HistóriaApp</h1>
+                <p>Aprenda Ciências Humanas jogando!</p>
+            </div>
+
+            <div class="auth-tabs">
+                <button class="tab-btn ativa" data-tab="login">Entrar</button>
+                <button class="tab-btn" data-tab="cadastro">Cadastrar</button>
+            </div>
+
+            <form id="form-login" class="auth-form ativa">
+                <div class="campo">
+                    <label for="login-email">Email</label>
+                    <input type="email" id="login-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="campo">
+                    <label for="login-senha">Senha</label>
+                    <input type="password" id="login-senha" placeholder="Sua senha" required>
+                </div>
+                <button type="submit" class="btn btn-primario btn-grande">Entrar</button>
+            </form>
+
+            <form id="form-cadastro" class="auth-form">
+                <div class="campo">
+                    <label for="cad-nome">Nome</label>
+                    <input type="text" id="cad-nome" placeholder="Seu nome" required>
+                </div>
+                <div class="campo">
+                    <label for="cad-email">Email</label>
+                    <input type="email" id="cad-email" placeholder="seu@email.com" required>
+                </div>
+                <div class="campo">
+                    <label for="cad-senha">Senha</label>
+                    <input type="password" id="cad-senha" placeholder="Mínimo 6 caracteres" required>
+                </div>
+                <button type="submit" class="btn btn-primario btn-grande">Criar Conta</button>
+            </form>
+
+            <div id="auth-erro" class="erro-msg"></div>
+        </div>
+    </div>
+
+    <!-- TELA PRINCIPAL (DASHBOARD) -->
+    <div id="tela-dashboard" class="tela">
+        <header class="header">
+            <div class="header-esquerda">
+                <span class="logo-icon-mini">&#128218;</span>
+                <span class="header-titulo">HistóriaApp</span>
+            </div>
+            <div class="header-direita">
+                <div class="usuario-info">
+                    <span class="xp-badge">&#9889; <span id="xp-display">0</span> XP</span>
+                    <span class="nivel-badge">Nv. <span id="nivel-display">1</span></span>
+                </div>
+                <button id="btn-logout" class="btn btn-mini">Sair</button>
+            </div>
+        </header>
+
+        <main class="dashboard">
+            <section class="saudacao">
+                <h2 id="saudacao-texto">Olá!</h2>
+                <p>Continue seus estudos</p>
+            </section>
+
+            <section id="ultima-trilha" class="ultima-trilha" style="display: none;">
+                <div class="trilha-card">
+                    <div class="trilha-header">
+                        <span class="trilha-label">Continuar de onde parou</span>
+                    </div>
+                    <div class="trilha-corpo">
+                        <div class="trilha-info">
+                            <span class="trilha-disciplina" id="trilha-disciplina"></span>
+                            <span class="trilha-modulo" id="trilha-modulo"></span>
+                        </div>
+                        <div class="trilha-progresso">
+                            <div class="trilha-barra">
+                                <div class="trilha-barra-fill" id="trilha-barra-fill"></div>
+                            </div>
+                            <span class="trilha-percentual" id="trilha-percentual">0%</span>
+                        </div>
+                        <button class="btn btn-primario btn-continuar" id="btn-continuar-trilha">Continuar &#8250;</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="disciplinas-section">
+                <h3>Trilhas de Estudo</h3>
+                <div class="trilhas-grid">
+                    <div class="trilha-estudo-card" data-tema="historia-brasil-republica" data-link="trilha.html">
+                        <span class="trilha-estudo-icone">🇧🇷</span>
+                        <span class="trilha-estudo-nome">História do Brasil<br>República</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="geopolitica">
+                        <span class="trilha-estudo-icone">&#127758;</span>
+                        <span class="trilha-estudo-nome">Geopolítica do<br>Século XXI</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="filosofia-grega">
+                        <span class="trilha-estudo-icone">&#128218;</span>
+                        <span class="trilha-estudo-nome">Filosofia<br>Grega</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="idade-media">
+                        <span class="trilha-estudo-icone">&#127984;</span>
+                        <span class="trilha-estudo-nome">Idade<br>Média</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="sociologia">
+                        <span class="trilha-estudo-icone">&#128101;</span>
+                        <span class="trilha-estudo-nome">Sociologia</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="historia-brasil-colonial">
+                        <span class="trilha-estudo-icone">&#127963;</span>
+                        <span class="trilha-estudo-nome">História do Brasil<br>Colonial</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="era-vargas">
+                        <span class="trilha-estudo-icone">&#128220;</span>
+                        <span class="trilha-estudo-nome">Era<br>Vargas</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="literatura-seculo-xx">
+                        <span class="trilha-estudo-icone">&#128214;</span>
+                        <span class="trilha-estudo-nome">Literatura Brasileira<br>Século XX</span>
+                    </div>
+                    <div class="trilha-estudo-card" data-tema="atualidades">
+                        <span class="trilha-estudo-icone">&#128240;</span>
+                        <span class="trilha-estudo-nome">Atualidades</span>
+                    </div>
+                </div>
+                <button class="btn btn-secundario btn-mais-trilhas" id="btn-mais-trilhas">Ver mais trilhas de estudo &#8250;</button>
+            </section>
+
+            <section class="atividades-section">
+                <h3>Atividades Recentes</h3>
+                <div id="lista-atividades" class="atividades-lista">
+                    <div class="atividade-vazia">
+                        <span class="atividade-vazia-icone">&#128221;</span>
+                        <p>Nenhuma atividade ainda. Comece uma trilha acima!</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="desafio-section">
+                <div class="desafio-card">
+                    <div class="desafio-header">
+                        <span class="desafio-icon">&#127920;</span>
+                        <div>
+                            <h3 class="desafio-titulo">Desafio Rápido</h3>
+                            <p class="desafio-sub">Gire a roleta e teste seus conhecimentos!</p>
+                        </div>
+                    </div>
+                    <div class="roleta-container">
+                        <div class="roleta" id="roleta">
+                            <div class="roleta-seta">&#9660;</div>
+                            <canvas id="canvas-roleta" width="280" height="280"></canvas>
+                        </div>
+                        <button class="btn btn-primario btn-girar" id="btn-girar">&#9881; Girar Roleta</button>
+                    </div>
+                    <div id="desafio-pergunta" class="desafio-pergunta" style="display: none;">
+                        <p id="desafio-enunciado"></p>
+                        <div id="desafio-opcoes" class="desafio-opcoes"></div>
+                        <div id="desafio-feedback" class="desafio-feedback"></div>
+                        <button id="btn-proximo-desafio" class="btn btn-primario" style="display: none; width: 100%;">Próximo Desafio</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="ranking-section">
+                <h3>&#127942; Ranking Semanal</h3>
+                <div id="lista-ranking" class="ranking-lista">
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- TELA DE MÓDULOS -->
+    <div id="tela-modulos" class="tela">
+        <header class="header">
+            <div class="header-esquerda">
+                <button id="btn-voltar-dashboard" class="btn btn-voltar">&#8592;</button>
+                <span id="disciplina-nome" class="header-titulo">Disciplina</span>
+            </div>
+            <div class="header-direita">
+                <span class="xp-badge">&#9889; <span class="xp-val">0</span> XP</span>
+                <span class="nivel-badge">Nv. <span class="nivel-val">1</span></span>
+            </div>
+        </header>
+
+        <main class="modulos-lista" id="lista-modulos">
+            <!-- Módulos serão carregados aqui -->
+        </main>
+    </div>
+
+    <!-- TELA DE AULA -->
+    <div id="tela-aula" class="tela">
+        <header class="header">
+            <div class="header-esquerda">
+                <button id="btn-voltar-modulos" class="btn btn-voltar">&#8592;</button>
+                <span id="aula-titulo" class="header-titulo">Aula</span>
+            </div>
+        </header>
+
+        <main class="aula-conteudo">
+            <div id="conteudo-aula" class="conteudo-texto">
+                <!-- Conteúdo da aula será carregado aqui -->
+            </div>
+            <div class="aula-acoes">
+                <button id="btn-concluir-aula" class="btn btn-primario btn-grande">Concluir Aula &#9889;</button>
+            </div>
+        </main>
+    </div>
+
+    <!-- TELA DE QUIZ -->
+    <div id="tela-quiz" class="tela">
+        <header class="header">
+            <div class="header-esquerda">
+                <button id="btn-sair-quiz" class="btn btn-voltar">&#8592;</button>
+                <span class="header-titulo">Quiz</span>
+            </div>
+            <div class="header-direita">
+                <span id="quiz-progresso">1/10</span>
+            </div>
+        </header>
+
+        <main class="quiz-container">
+            <div class="quiz-barra-progresso">
+                <div id="barra-progresso" class="barra-progresso"></div>
+            </div>
+
+            <div id="quiz-pergunta" class="quiz-pergunta">
+                <!-- Pergunta será carregada aqui -->
+            </div>
+
+            <div id="quiz-opcoes" class="quiz-opcoes">
+                <!-- Opções serão carregadas aqui -->
+            </div>
+
+            <div id="quiz-feedback" class="quiz-feedback">
+                <!-- Feedback será mostrado aqui -->
+            </div>
+
+            <button id="btn-proxima" class="btn btn-primario btn-grande" style="display: none;">
+                Próxima Pergunta
+            </button>
+        </main>
+    </div>
+
+    <!-- TELA DE RESULTADO -->
+    <div id="tela-resultado" class="tela">
+        <div class="resultado-container">
+            <div class="resultado-icon" id="resultado-icon">&#127942;</div>
+            <h2 id="resultado-titulo">Parabéns!</h2>
+            <div class="resultado-stats">
+                <div class="stat">
+                    <span class="stat-valor" id="stat-acertou">0</span>
+                    <span class="stat-label">Acertou</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-valor" id="stat-errou">0</span>
+                    <span class="stat-label">Errou</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-valor" id="stat-xp">0</span>
+                    <span class="stat-label">XP Ganho</span>
+                </div>
+            </div>
+            <div class="resultado-acoes">
+                <button id="btn-quiz-novamente" class="btn btn-primario">Quiz Novamente</button>
+                <button id="btn-voltar-modulos-resultado" class="btn btn-secundario">Voltar aos Módulos</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
