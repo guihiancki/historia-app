@@ -383,6 +383,8 @@ body {
     gap: 8px;
     min-height: 110px;
     justify-content: center;
+    text-decoration: none;
+    color: inherit;
 }
 
 .trilha-estudo-card:hover {

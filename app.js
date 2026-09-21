@@ -113,6 +113,17 @@ function setupAuth() {
 async function carregarUltimaTrilha() {
     if (!usuarioAtual) return;
 
+    var trilhasMap = {
+        'republica': { nome: 'República' },
+        'geopolitica': { nome: 'Geopolítica do Século XXI' },
+        'filosofia-grega': { nome: 'Filosofia Grega' },
+        'idade-media': { nome: 'Idade Média' },
+        'sociologia': { nome: 'Sociologia' },
+        'brasil-colonial': { nome: 'Brasil Colonial' },
+        'literatura-brasileira': { nome: 'Literatura Brasileira' },
+        'atualidades': { nome: 'Atualidades' }
+    };
+
     try {
         const progresso = await apiGet('/progresso/' + usuarioAtual.id);
 
@@ -126,30 +137,36 @@ async function carregarUltimaTrilha() {
             return;
         }
 
-        var trilhaAtual = null;
+        var melhorTrilha = null;
         var maiorProgresso = 0;
 
         for (var i = 0; i < progresso.length; i++) {
             var p = progresso[i];
-            if (p.progresso_json) {
+            if (p.modulo_id === 99 && p.progresso_json) {
                 try {
-                    var json = JSON.parse(p.progresso_json);
-                    var completas = json.filter(function(e) { return e.completa; }).length;
-                    var total = json.length;
-                    var percentual = total > 0 ? (completas / total) * 100 : 0;
-                    if (percentual > maiorProgresso && percentual < 100) {
-                        maiorProgresso = percentual;
-                        trilhaAtual = {
-                            nome: 'República',
-                            percentual: percentual,
-                            etapas: json
-                        };
+                    var todo = JSON.parse(p.progresso_json);
+                    var trilhas = Object.keys(todo);
+                    for (var t = 0; t < trilhas.length; t++) {
+                        var trilhaId = trilhas[t];
+                        var etapas = todo[trilhaId];
+                        if (etapas && etapas.length > 0) {
+                            var completas = etapas.filter(function(e) { return e.completa; }).length;
+                            var percentual = (completas / etapas.length) * 100;
+                            if (percentual > maiorProgresso && percentual < 100) {
+                                maiorProgresso = percentual;
+                                melhorTrilha = {
+                                    id: trilhaId,
+                                    nome: (trilhasMap[trilhaId] || { nome: trilhaId }).nome,
+                                    percentual: percentual
+                                };
+                            }
+                        }
                     }
                 } catch(e) {}
             }
         }
 
-        if (!trilhaAtual) {
+        if (!melhorTrilha) {
             $('#trilha-disciplina').textContent = 'Nenhuma trilha iniciada';
             $('#trilha-modulo').textContent = 'Escolha uma trilha de estudo abaixo para começar';
             $('#trilha-percentual').textContent = '0%';
@@ -159,15 +176,15 @@ async function carregarUltimaTrilha() {
             return;
         }
 
-        $('#trilha-disciplina').textContent = 'República';
-        $('#trilha-modulo').textContent = Math.round(trilhaAtual.percentual) + '% concluído';
-        $('#trilha-percentual').textContent = Math.round(trilhaAtual.percentual) + '%';
-        $('#trilha-barra-fill').style.width = trilhaAtual.percentual + '%';
+        $('#trilha-disciplina').textContent = melhorTrilha.nome;
+        $('#trilha-modulo').textContent = Math.round(melhorTrilha.percentual) + '% concluído';
+        $('#trilha-percentual').textContent = Math.round(melhorTrilha.percentual) + '%';
+        $('#trilha-barra-fill').style.width = melhorTrilha.percentual + '%';
         $('#ultima-trilha').style.display = 'block';
         $('#btn-continuar-trilha').style.display = 'block';
 
         $('#btn-continuar-trilha').onclick = function() {
-            window.location.href = 'trilha.html';
+            window.location.href = 'trilha.html?id=' + melhorTrilha.id;
         };
     } catch (err) {
         console.error('Erro ao carregar última trilha:', err);
@@ -188,16 +205,12 @@ async function carregarDashboard() {
     carregarRanking();
 
     $$('.trilha-estudo-card').forEach(function(card) {
-        card.addEventListener('click', function() {
-            var link = card.getAttribute('data-link');
-            if (link) {
-                window.location.href = link;
-                return;
+        card.addEventListener('click', function(e) {
+            e.preventDefault();
+            var href = card.getAttribute('href');
+            if (href) {
+                window.location.href = href;
             }
-            var tema = card.getAttribute('data-tema');
-            var nome = card.querySelector('.trilha-estudo-nome').innerText;
-            disciplinaAtual = { id: null, nome: nome, tema: tema };
-            carregarModulos(disciplinaAtual);
         });
     });
 }
