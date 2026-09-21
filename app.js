@@ -707,7 +707,7 @@ async function carregarRanking() {
     ficticios.sort(function(a, b) { return b.xp - a.xp; });
 
     var html = '';
-    for (var i = 0; i < ficticios.length; i++) {
+    for (var i = 0; i < Math.min(ficticios.length, 10); i++) {
         var u = ficticios[i];
         var pos = i + 1;
         var posClasse = 'ranking-pos';
