@@ -6,21 +6,43 @@ var trilhaAtual = null;
 function $(sel) { return document.querySelector(sel); }
 function $$(sel) { return document.querySelectorAll(sel); }
 
+function fetchComTimeout(url, options, timeout) {
+    timeout = timeout || 20000;
+    var controller = new AbortController();
+    var timer = setTimeout(function() { controller.abort(); }, timeout);
+    return fetch(url, Object.assign({}, options || {}, { signal: controller.signal })).then(function(res) {
+        clearTimeout(timer);
+        return res;
+    }).catch(function(err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+            throw new Error('Servidor demorando para responder.');
+        }
+        throw err;
+    });
+}
+
 function apiGet(caminho) {
-    return fetch(API_URL + caminho).then(function(r) {
+    mostrarLoading(true);
+    return fetchComTimeout(API_URL + caminho).then(function(r) {
         if (!r.ok) throw new Error('Erro');
         return r.json();
+    }).finally(function() {
+        mostrarLoading(false);
     });
 }
 
 function apiPost(caminho, dados) {
-    return fetch(API_URL + caminho, {
+    mostrarLoading(true);
+    return fetchComTimeout(API_URL + caminho, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dados)
     }).then(function(r) {
         if (!r.ok) throw new Error('Erro');
         return r.json();
+    }).finally(function() {
+        mostrarLoading(false);
     });
 }
 
@@ -35,6 +57,13 @@ function atualizarHeader() {
     $('#xp-display').textContent = xp;
     $('#nivel-display').textContent = nivel;
     $('#trilha-titulo').textContent = trilhaAtual ? (trilhaAtual.icone + ' ' + trilhaAtual.titulo) : 'Trilha';
+}
+
+function mostrarLoading(mostrar) {
+    var el = $('#loading-overlay');
+    if (el) {
+        el.style.display = mostrar ? 'flex' : 'none';
+    }
 }
 
 function carregarProgresso() {
@@ -74,7 +103,6 @@ function salvarProgresso() {
         modulo_id: 99,
         progresso_json: JSON.stringify(todo)
     }).then(function(res) {
-        console.log('Progresso salvo:', res);
     }).catch(function(err) {
         console.error('Erro ao salvar progresso, tentando novamente...');
         setTimeout(function() {
@@ -91,6 +119,11 @@ function salvarProgresso() {
 function salvarXpNoBanco(xpGanho) {
     if (!usuarioAtual) return;
 
+    usuarioAtual.xp_total = (usuarioAtual.xp_total || 0) + xpGanho;
+    usuarioAtual.nivel = Math.floor(usuarioAtual.xp_total / 100) + 1;
+    localStorage.setItem('usuario', JSON.stringify(usuarioAtual));
+    atualizarHeader();
+
     apiPost('/xp/' + usuarioAtual.id, {
         xp_ganho: xpGanho
     }).then(function(res) {
@@ -101,7 +134,6 @@ function salvarXpNoBanco(xpGanho) {
             atualizarHeader();
         }
     }).catch(function(err) {
-        console.error('Erro ao salvar XP, tentando novamente...');
         setTimeout(function() {
             apiPost('/xp/' + usuarioAtual.id, {
                 xp_ganho: xpGanho
@@ -113,7 +145,7 @@ function salvarXpNoBanco(xpGanho) {
                     atualizarHeader();
                 }
             }).catch(function() {});
-        }, 1000);
+        }, 2000);
     });
 }
 

@@ -31,26 +31,59 @@ function mostrarErro(seletor, mensagem) {
     setTimeout(() => el.classList.remove('visivel'), 5000);
 }
 
-async function apiGet(caminho) {
-    const res = await fetch(`${API_URL}${caminho}`);
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.erro || 'Erro na requisição');
+function mostrarLoading(mostrar) {
+    var el = $('#loading-overlay');
+    if (el) {
+        el.style.display = mostrar ? 'flex' : 'none';
     }
-    return res.json();
+}
+
+function fetchComTimeout(url, options, timeout) {
+    timeout = timeout || 20000;
+    var controller = new AbortController();
+    var timer = setTimeout(function() { controller.abort(); }, timeout);
+    return fetch(url, Object.assign({}, options || {}, { signal: controller.signal })).then(function(res) {
+        clearTimeout(timer);
+        return res;
+    }).catch(function(err) {
+        clearTimeout(timer);
+        if (err.name === 'AbortError') {
+            throw new Error('Servidor demorando para responder. Tente novamente.');
+        }
+        throw err;
+    });
+}
+
+async function apiGet(caminho) {
+    mostrarLoading(true);
+    try {
+        const res = await fetchComTimeout(`${API_URL}${caminho}`);
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.erro || 'Erro na requisição');
+        }
+        return await res.json();
+    } finally {
+        mostrarLoading(false);
+    }
 }
 
 async function apiPost(caminho, dados) {
-    const res = await fetch(`${API_URL}${caminho}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(dados)
-    });
-    if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.erro || 'Erro na requisição');
+    mostrarLoading(true);
+    try {
+        const res = await fetchComTimeout(`${API_URL}${caminho}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dados)
+        });
+        if (!res.ok) {
+            const err = await res.json();
+            throw new Error(err.erro || 'Erro na requisição');
+        }
+        return await res.json();
+    } finally {
+        mostrarLoading(false);
     }
-    return res.json();
 }
 
 function atualizarHeaderXP() {
@@ -272,12 +305,18 @@ async function carregarProgressoModulos(modulos) {
     if (!usuarioAtual) return;
 
     try {
-        const progresso = await apiGet(`/progresso/${usuarioAtual.id}`);
+        const dados = await apiGet(`/progresso/${usuarioAtual.id}`);
+
+        if (!dados || !dados.progresso_json) return;
+
+        const todo = JSON.parse(dados.progresso_json);
 
         $$('.modulo-card').forEach(card => {
             const moduloId = parseInt(card.dataset.id);
-            const prog = progresso.find(p => p.modulo_id === moduloId);
-            const percentual = prog ? prog.percentual : 0;
+            const etapas = todo[String(moduloId)] || [];
+            const total = etapas.length;
+            const completas = etapas.filter(e => e.completa).length;
+            const percentual = total > 0 ? (completas / total) * 100 : 0;
 
             card.querySelector('.barra-progresso-mini-fill').style.width = `${percentual}%`;
             card.querySelector('.progresso-texto').textContent = `${Math.round(percentual)}%`;
